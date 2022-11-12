@@ -7,3 +7,12 @@ This project was an opportunity to start learning how to set up Github Actions a
 2. Create a service in Fast API/Flask to host the model
 3. Create a Dockerfile and Container for this model's service to go into Azure
 4. Create a database using MongoDB where results can be stored in
+
+
+
+
+to run... 
+
+docker build -t wine .
+
+docker container run -it wine /bin/bash

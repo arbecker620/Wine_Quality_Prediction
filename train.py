@@ -4,140 +4,104 @@ from sklearn.ensemble import RandomForestRegressor, GradientBoostingClassifier
 import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
-# Set random seed
-seed = 42
-
-################################
-########## DATA PREP ###########
-################################
-
-# Load in the data
-df = pd.read_csv("winequality-red.csv")
-
-# Split into train and test sections
-y = df.pop("quality")
-X_train, X_test, y_train, y_test = train_test_split(df, y, test_size=0.2, random_state=seed)
-
-#################################
-########## MODELLING ############
-#################################
-
-# Fit a model on the train section
-regr = RandomForestRegressor(max_depth=6, random_state=seed)
-gbc = GradientBoostingClassifier(random_state=seed)
+import os
+from datetime import datetime
+import json
+ 
 
 
+def Model_Training(data,target_var):
+    #, seed,test_size_p ,max_depth
+    models_to_train = ['Random Forest']
 
-regr.fit(X_train, y_train)
-gbc.fit(X_train, y_train)
+    now = datetime.now().strftime("%Y_%m_%d-%I_%M_%S_%p")
+    with open('train_config.json') as file:
+        json_df = json.load(file)
+    
+    
+    list_values=json_df.get('Experiment')
+    
+    model_type = []
+    id = []
+    seed = []
+    training_set = []
+    description = []
 
-# Report training set score
-regr_train_score = regr.score(X_train, y_train) * 100
-gbc_train_score = gbc.score(X_train, y_train) * 100
-# Report test set score
-regr_test_score = regr.score(X_test, y_test) * 100
-gbc_test_score = gbc.score(X_test, y_test) * 100
+    col_name = ['ID', 'Seed', 'Training Set', 'Model Type', 'Description']
+    for n in list_values:
+        id.append(n['ID'])
+        seed.append(n['Seed'])
+        training_set.append(n['Training Set']/100)
+        model_type.append(n['Model Type'])
+        description.append(n['Description'])
+    
+    experiments_df=pd.DataFrame(list(zip(id, seed, training_set,model_type,description)),
+              columns=col_name)
+    
 
-# Write scores to a file
-with open("metrics.txt", 'w') as outfile:
-        outfile.write("Random Forest Training variance explained: %2.1f%%\n" % regr_train_score)
-        outfile.write("Random Forest Test variance explained: %2.1f%%\n" % regr_test_score)
-        outfile.write("GBC Training variance explained: %2.1f%%\n" % gbc_train_score)
-        outfile.write("GBC Test variance explained: %2.1f%%\n" % gbc_test_score)
+    select_model = {
+        'Random Forest': RandomForestRegressor(),
+        'Gradient Boost': GradientBoostingClassifier()
+        }
+    model_train = select_model.get(model_type[1])
+    n = models_to_train[0]
 
+    pred_value = target_var
 
+    pred_value_list = data[target_var]
+    
 
-##########################################
-##### PLOT FEATURE IMPORTANCE ############
-##########################################
-# Calculate feature importance in random forest
-regr_importances = regr.feature_importances_
-labels = df.columns
-regr_feature_df = pd.DataFrame(list(zip(labels,regr_importances)), columns = ["feature","importance"])
-regr_feature_df = regr_feature_df.sort_values(by='importance', ascending=False,)
+    
+    for index, row in experiments_df.iterrows():
+        seed = row['Seed']
+        n = row['Model Type']
+        id = str(row['ID'])
+        select_model = {
+        'Random Forest': RandomForestRegressor(),
+        'Gradient Boost': GradientBoostingClassifier()
+        }
 
-# image formatting
-axis_fs = 18 #fontsize
-title_fs = 22 #fontsize
-sns.set(style="whitegrid")
+        model_train = select_model.get(n)
+        y = data.pop(pred_value)
+        X_train, X_test, y_train, y_test = train_test_split(data, y, test_size=row['Training Set'], random_state=row['Seed'])
+        #regr = RandomForestRegressor(max_depth=6, random_state=seed)
+    
+        model_train.fit(X_train, y_train)
+        # Report training set score
+        regr_train_score = model_train.score(X_train, y_train) * 100
 
-ax = sns.barplot(x="importance", y="feature", data=regr_feature_df)
-ax.set_xlabel('Importance',fontsize = axis_fs) 
-ax.set_ylabel('Feature', fontsize = axis_fs)#ylabel
-ax.set_title('Random forest\nfeature importance', fontsize = title_fs)
+        regr_test_score = model_train.score(X_test, y_test) * 100
 
-plt.tight_layout()
-plt.savefig("Random_Forest_feature_importance.png",dpi=120) 
-plt.close()
+        # Write scores to a file
 
+        with open(id+'_'+n+"_"+now+"_metrics.txt", 'w') as outfile:
+            outfile.write(n+" Training variance explained: %2.1f%%\n" % regr_train_score)
+            outfile.write(n+" Test variance explained: %2.1f%%\n" % regr_test_score)
 
-# Calculate feature importance in random forest
-gbc_importances = gbc.feature_importances_
-labels = df.columns
-gbc_feature_df = pd.DataFrame(list(zip(labels,gbc_importances)), columns = ["feature","importance"])
-gbc_feature_df = gbc_feature_df.sort_values(by='importance', ascending=False,)
+    
+        model_importances = model_train.feature_importances_
+        labels = df.columns
+        model_feature_df = pd.DataFrame(list(zip(labels,model_importances)), columns = ["feature","importance"])
+        model_feature_df = model_feature_df.sort_values(by='importance', ascending=False,)
+        axis_fs = 18 #fontsize
+        title_fs = 22 #fontsize
+        sns.set(style="whitegrid")
+        ax = sns.barplot(x="importance", y="feature", data=model_feature_df)
+        ax.set_xlabel('Importance',fontsize = axis_fs) 
+        ax.set_ylabel('Feature', fontsize = axis_fs)#ylabel
+        ax.set_title(n+'\nfeature importance', fontsize = title_fs)
+        plt.tight_layout()
+        plt.savefig(id+'_'+n+"_"+now+"_feature_importance.png",dpi=120) 
+        plt.close()
 
-# image formatting
-axis_fs = 18 #fontsize
-title_fs = 22 #fontsize
-sns.set(style="whitegrid")
-
-ax = sns.barplot(x="importance", y="feature", data=gbc_feature_df)
-ax.set_xlabel('Importance',fontsize = axis_fs) 
-ax.set_ylabel('Feature', fontsize = axis_fs)#ylabel
-ax.set_title('Gradient Boost\nfeature importance', fontsize = title_fs)
-
-plt.tight_layout()
-plt.savefig("GBC_feature_importance.png",dpi=120) 
-plt.close()
-
-
-
-
-
-
-
-
-
-##########################################
-############ PLOT RESIDUALS  #############
-##########################################
-
-y_pred = regr.predict(X_test) + np.random.normal(0,0.25,len(y_test))
-y_jitter = y_test + np.random.normal(0,0.25,len(y_test))
-res_df = pd.DataFrame(list(zip(y_jitter,y_pred)), columns = ["true","pred"])
-
-ax = sns.scatterplot(x="true", y="pred",data=res_df)
-ax.set_aspect('equal')
-ax.set_xlabel('True wine quality',fontsize = axis_fs) 
-ax.set_ylabel('Predicted wine quality', fontsize = axis_fs)#ylabel
-ax.set_title('Residuals', fontsize = title_fs)
-
-# Make it pretty- square aspect ratio
-ax.plot([1, 10], [1, 10], 'black', linewidth=1)
-plt.ylim((2.5,8.5))
-plt.xlim((2.5,8.5))
-
-plt.tight_layout()
-plt.savefig("Random Forest residuals.png",dpi=120) 
+        data[target_var] = pred_value_list
 
 
+    
+    return print("Complete")
 
 
-y_pred = gbc.predict(X_test) + np.random.normal(0,0.25,len(y_test))
-y_jitter = y_test + np.random.normal(0,0.25,len(y_test))
-res_df = pd.DataFrame(list(zip(y_jitter,y_pred)), columns = ["true","pred"])
+if __name__ == "__main__":
+        df = pd.read_csv("winequality-red.csv")
 
-ax = sns.scatterplot(x="true", y="pred",data=res_df)
-ax.set_aspect('equal')
-ax.set_xlabel('True wine quality',fontsize = axis_fs) 
-ax.set_ylabel('Predicted wine quality', fontsize = axis_fs)#ylabel
-ax.set_title('Residuals', fontsize = title_fs)
-
-# Make it pretty- square aspect ratio
-ax.plot([1, 10], [1, 10], 'black', linewidth=1)
-plt.ylim((2.5,8.5))
-plt.xlim((2.5,8.5))
-
-plt.tight_layout()
-plt.savefig("GBC residuals.png",dpi=120) 
+        Model_Training(df,'quality')
