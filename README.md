@@ -9,7 +9,7 @@ This project was an opportunity to start learning how to set up Github Actions a
 4. Create a database using MongoDB where results can be stored in
 
 
-
+[![](https://mermaid.ink/img/pako:eNp10M1qwzAMB_BXET63L5DDYPka7IOxNrBDnIOI1cQQ28GRaUvIu89pe0gP88XGv78k0Cxap0gkovM49lDl0kI8r_WvtgQ_AQfNV6g8aqttBzkyNrDfv6TzV6wb4EgDtez8cq9LV8vqA1rlDJTO08RwoC7ek_PNJlTUbx6VJsuQOjfxw7LVoJxvEyFz9qS7R-_ifypv9F4Xl5G8NmvTb0vNFj-2WJ3dE34-Ye-JGrEThrxBreJy5jUsBfdkSIokPhWdMAwshbRLjGJgd7zaViTsA-1EGBUy5RrjWs39c_kDC3R0qw?type=png)](https://mermaid.live/edit#pako:eNp10M1qwzAMB_BXET63L5DDYPka7IOxNrBDnIOI1cQQ28GRaUvIu89pe0gP88XGv78k0Cxap0gkovM49lDl0kI8r_WvtgQ_AQfNV6g8aqttBzkyNrDfv6TzV6wb4EgDtez8cq9LV8vqA1rlDJTO08RwoC7ek_PNJlTUbx6VJsuQOjfxw7LVoJxvEyFz9qS7R-_ifypv9F4Xl5G8NmvTb0vNFj-2WJ3dE34-Ye-JGrEThrxBreJy5jUsBfdkSIokPhWdMAwshbRLjGJgd7zaViTsA-1EGBUy5RrjWs39c_kDC3R0qw)
 
 to run... 
 
